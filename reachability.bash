@@ -13,7 +13,23 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-host=${1:?"Must specify host"}
+
+help="\
+reachability.bash: keep track of whether a network host is reachable.
+
+Usage:
+	reachability.bash <host> [ping_interval (default: 10s)]
+
+Will print whether or not a host is reachable, and print again with
+timestamps whenever reachability changes.
+"
+
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+	echo "$help"
+	exit 1
+fi
+
+host=${1}
 timeout=${2:-10}
 
 is_reachable ()
