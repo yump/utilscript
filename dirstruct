@@ -24,8 +24,6 @@ usage:
 	dirstruct <source dir>
 "
 
-#find "$1" -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 -I xxx echo "mkdir \"\`basename \"xxx\"\`\"" | sh
-
 if [ -d "$1" ]
 then
 	find "$1" -mindepth 1 -maxdepth 1 -type d -printf '%f\0' | xargs -0 mkdir
