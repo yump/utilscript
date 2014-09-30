@@ -14,10 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+help="\
+git-multi: run git commands in multiple repositories
+
+Usage:
+	git-multi <action> <repository-directory...>
+"
+
 iwd="$(pwd)"
 
 if [ $# -lt 2 ]; then
-	echo "Usage: git-multi <action> <repository-directory...>"
+	echo "$help"
 	exit 1
 fi
 
