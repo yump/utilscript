@@ -1,0 +1,20 @@
+#!/bin/bash
+
+iwd="$(pwd)"
+
+if [ $# -lt 2 ]; then
+	echo "Usage: git-multi <action> <repository-directory...>"
+	exit 1
+fi
+
+action="$1"
+shift
+
+for repo in "$@"; do
+	cd "$repo"
+	printf "\ngit $action in $repo\n"
+	git $action
+	cd "$iwd"
+done
+
+
