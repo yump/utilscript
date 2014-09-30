@@ -14,6 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+help="\
+moz-regen-profiles.ini.bash: generate a valid profiles.ini for the
+Firefox or Thunderbird profiles in the current directory.
+
+Usage: 
+	moz-regen-profiles.ini.bash [-h | --help]
+"
+
+if [[ $# -ne 0 ]]; then
+	echo "$help"
+	exit 1
+fi
+
 profilenum=0
 
 echo "[General]"
