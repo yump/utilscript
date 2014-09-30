@@ -14,7 +14,36 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+trim-common-prefixes.py: make overly-verbose output more human and
+screen-reader friendly by replacing words that don't change between
+subsequent lines with "-----".
+
+Usage: 
+    journalctl | trim-common-prefixes.py
+
+    Sep 30 18:09:10 hogwarts dnf[28017]: cachedir: /var/cache/dnf/x86_64/20
+    Sep 30 18:09:10 hogwarts dnf[28017]: DNF version: 0.5.4
+    Sep 30 18:09:10 hogwarts dnf[28017]: Making cache files for all metadata files.
+    Sep 30 18:09:10 hogwarts dnf[28017]: Metadata cache refreshed recently.
+    Sep 30 18:09:10 hogwarts systemd[1]: Started dnf makecache.
+    Sep 30 18:10:10 hogwarts /etc/gdm/Xsession[20359]: => suspend now!-
+
+    becomes:
+
+    Sep 30 18:09:10 hogwarts dnf[28017]: cachedir: /var/cache/dnf/x86_64/20
+    --- -- -------- -------- ----------- DNF version: 0.5.4
+    --- -- -------- -------- ----------- Making cache files for all metadata files.
+    --- -- -------- -------- ----------- Metadata cache refreshed recently.
+    --- -- -------- -------- systemd[1]: Started dnf makecache.
+    --- -- 18:10:10 hogwarts /etc/gdm/Xsession[20359]: => suspend now!
+"""
+
 import sys
+
+if len(sys.argv) > 1:
+    print(__doc__)
+    exit(1)
 
 oldline = []
 
