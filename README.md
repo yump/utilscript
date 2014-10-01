@@ -1,25 +1,37 @@
-randsource
-============
+# utilscript
 
-Fast pseudorandom data source. Good for wiping disks. Not cryptographic
-grade.
 
-Usage
------
+Various scripts from my personal ~/bin, filtered for possibly being
+useful to someone else.
 
-    randsource >/dev/sdX
+## Hilights
 
-or
 
-    randsource | pv >/dev/sdX
+### genpass.py
 
-if you want to keep an eye on it.
+Versatile password generator.  Uses /dev/random and is reasonably
+miserly with the entropy, so it doesn't take too long. Supports
+xkcd-style passwords, plus the regular kind.
 
-Disclaimers
------------
+### trim-common-prefixes.py
 
-Not guaranteed to be fit for any particular purpose, etc. etc., not
-guaranteed not to put George W. Bush back in the white house or reduce
-your cat to a smouldering pile of ash, etc. etc...
+Remove common prefixes from the beginnings of lines.  Good for piping to
+espeak.
 
-Not guaranteed to be faster than your SATA bus, but probably is.
+### multi-firefox.bash
+
+Put your firefoxen in ~/opt/firefox, make symlinks to multi-firefox that
+start with "ff-", and easily call whichever firefox you want.  Good for
+people who frequently switch release channels and CPU architectures.
+
+### wakeme.sh
+
+Test the sound, wait for a specified interval, then play a loud alarm.
+Present day. Present time. HA HA HA.
+
+## Disclaimers
+
+The years given in the copyright headers are mostly incorrect. The
+scripts were prettied-up and added to this repo in 2014, but most of
+them are older.  genpass.py and trim-common-prefixes.py, at least, are
+actually from 2014.  
