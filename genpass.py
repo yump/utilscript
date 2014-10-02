@@ -46,6 +46,7 @@ def genpass(charset, length):
     """
     for index in islice(strong_randint(len(charset)), length):
         sys.stdout.write(charset[index])
+        sys.stdout.flush()
     sys.stdout.write('\n')
 
 _wordcache=None
@@ -66,6 +67,7 @@ def xkcd(length=None, entropy=None):
         length = math.ceil(entropy / math.log2(len(words)))
     for index in islice(strong_randint(len(words)), length):
         sys.stdout.write(words[index] + " ")
+        sys.stdout.flush()
     sys.stdout.write('\n')
 
 def rangelen(r):
@@ -100,7 +102,7 @@ def strong_randint(*args):
 
 def randbits():
     """Get random bits from /dev/random."""
-    with open('/dev/random','rb') as randfile:
+    with open('/dev/random','rb',buffering=0) as randfile:
         while True:
             byte = ord(randfile.read(1))
             for i in range(8):
