@@ -28,7 +28,7 @@ supported=("release-32" \
             "nightly-64")
 
 print_usage () {
-	cat 1>&2 <<EOF
+    cat 1>&2 <<EOF
 Usage:
     lazyfox.bash <firefox_channel> [firefox_options...]
         Run <firefox_channel> with the specified options.
@@ -53,13 +53,13 @@ EOF
 }
 
 install_ff_channel () {
-	channel="$1"
-	targdir="${foxdir}/${channel}"
-	if [ -d "$targdir" ]; then
+    channel="$1"
+    targdir="${foxdir}/${channel}"
+    if [ -d "$targdir" ]; then
         # Already installed
-		return
-	fi
-	check_supported "$channel"
+        return
+    fi
+    check_supported "$channel"
     echo "Installing Firefox $channel"
     case $channel in
         "release-32")
@@ -92,54 +92,54 @@ install_ff_channel () {
 }
 
 lazyexec_ff_channel () {
-	channel="$1"
-	shift
+    channel="$1"
+    shift
     install_ff_channel "$channel"
     cd "${foxdir}/${channel}" && exec ./firefox "$@"
 }
 
 check_supported () {
-	for channel in ${supported[@]}; do
-		if [ "$1" == "$channel" ]; then
-			return 0
-		fi
-	done
-	print_usage
+    for channel in ${supported[@]}; do
+        if [ "$1" == "$channel" ]; then
+            return 0
+        fi
+    done
+    print_usage
     echo "$1 is not supported for installation" 1>&2
-	exit 2
+    exit 2
 }
 
 # main
 invoked=$(basename "$0")
 if [ "$invoked" == "lazyfox.bash" ]; then
-	if [ $# -eq 0 ]; then
-		print_usage
-		exit 1
-	fi
-	command="$1"
-	shift
-	case $command in
-		install)
+    if [ $# -eq 0 ]; then
+        print_usage
+        exit 1
+    fi
+    command="$1"
+    shift
+    case $command in
+        install)
             for channel in $@; do
                 install_ff_channel "$channel"
             done
-			;;
-		install-symlinks)
+            ;;
+        install-symlinks)
             directory="$1"
             for channel in ${supported[@]}; do
                 ln -s "$0" "${directory}/ff-${channel}" || true
             done
-			;;
+            ;;
         help|-h|--help)
             print_usage
             ;;
-		*)
-			lazyexec_ff_channel "$command" "$@"
-			;;
-	esac
+        *)
+            lazyexec_ff_channel "$command" "$@"
+            ;;
+    esac
 else
     # Invoked from symlink
-	channel=${invoked#ff-}
-	lazyexec_ff_channel "$channel" "$@"
+    channel=${invoked#ff-}
+    lazyexec_ff_channel "$channel" "$@"
 fi
 
