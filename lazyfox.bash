@@ -127,7 +127,7 @@ if [ "$invoked" == "lazyfox.bash" ]; then
 		install-symlinks)
             directory="$1"
             for channel in ${supported[@]}; do
-                ln -s "$0" "${directory}/ff-${channel}"
+                ln -s "$0" "${directory}/ff-${channel}" || true
             done
 			;;
         help|-h|--help)
