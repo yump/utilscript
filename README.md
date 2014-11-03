@@ -32,7 +32,7 @@ Present day. Present time. HA HA HA.
 
 ## Disclaimers
 
-The years given in the copyright headers are mostly incorrect. The
-scripts were prettied-up and added to this repo in 2014, but most of
+The years given in the copyright headers are partly incorrect. The
+scripts were prettied-up and added to this repo in 2014, but many of
 them are older. lazyfox.bash, genpass.py and trim-common-prefixes.py, at
 least, are actually from 2014.  
