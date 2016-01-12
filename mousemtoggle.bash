@@ -14,10 +14,50 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-property="org.gnome.settings-daemon.peripherals.mouse middle-button-enabled"
+device_ids () {
+    xinput --list \
+        | grep 'slave *pointer' \
+        | grep -vi 'virtual' \
+        | sed -r 's/.*id=([[:digit:]]+).*/\1/'
+}
 
-if [ "$(gsettings get $property)" == "true" ]; then
-	gsettings set $property false
+on () {
+    device_ids | while read device_id; do
+        xinput set-prop $device_id 299 1
+    done
+}
+
+off () {
+    device_ids | while read device_id; do
+        xinput set-prop $device_id 299 0
+    done
+}
+
+toggle () {
+    device_ids | while read device_id; do
+        if xinput list-props $device_id | grep 299 | grep '0$' &>/dev/null; then
+            xinput set-prop $device_id 299 1
+        else
+            xinput set-prop $device_id 299 0
+        fi
+    done
+}
+
+usage () {
+    echo "Usage: mousemtoggle.bash [on|off]" 1>&2
+    exit 1
+}
+
+if (( $# == 1 )); then
+    if [[ "$1" == "on" ]]; then
+        on
+    elif [[ "$1" == "off" ]]; then
+        off
+    else
+        usage
+    fi
+elif (( $# == 0 )); then
+    toggle
 else
-	gsettings set $property true
+    usage
 fi
