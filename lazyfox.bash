@@ -24,6 +24,7 @@ supported=("release-32" \
             "release-64" \
             "beta-32" \
             "aurora-32" \
+            "aurora-64" \
             "nightly-32" \
             "nightly-64")
 
@@ -75,20 +76,22 @@ install_ff_channel () {
             url="${dirurl}$(curl -sl "$dirurl")"
             ;;
         "aurora-32")
-            dirurl="ftp://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/latest-mozilla-aurora/"
-            url="${dirurl}$(curl -sl "$dirurl" | grep 'linux-i686\.tar\.bz2')"
+            url="https://download.mozilla.org/?product=firefox-aurora-latest-ssl&os=linux64&lang=en-US"
+            ;;
+        "aurora-64")
+            url="https://download.mozilla.org/?product=firefox-aurora-latest-ssl&os=linux64&lang=en-US"
             ;;
         "nightly-32")
             dirurl="ftp://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/latest-mozilla-central/"
-            url="${dirurl}$(curl -sl "$dirurl" | grep 'linux-i686\.tar\.bz2')"
+            url="${dirurl}$(curl -sl "$dirurl" | grep 'linux-i686\.tar\.bz2' | sort | tail -n1)"
             ;;
         "nightly-64")
             dirurl="ftp://ftp.mozilla.org/pub/mozilla.org/firefox/nightly/latest-mozilla-central/"
-            url="${dirurl}$(curl -sl "$dirurl" | grep 'linux-x86_64\.tar\.bz2')"
+            url="${dirurl}$(curl -sl "$dirurl" | grep 'linux-x86_64\.tar\.bz2' | sort | tail -n1)"
             ;;
     esac
     mkdir -p "$targdir" \
-        && curl "$url" | tar -xjC "$targdir" --strip-components 1
+        && curl -L "$url" | tar -xjC "$targdir" --strip-components 1
 }
 
 lazyexec_ff_channel () {
