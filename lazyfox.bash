@@ -23,6 +23,7 @@ foxdir="$HOME/opt/firefox"
 supported=("release-32" \
             "release-64" \
             "beta-32" \
+            "beta-64" \
             "aurora-32" \
             "aurora-64" \
             "nightly-32" \
@@ -64,16 +65,16 @@ install_ff_channel () {
     echo "Installing Firefox $channel"
     case $channel in
         "release-32")
-            dirurl="ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/latest/linux-i686/en-US/"
-            url="${dirurl}$(curl -sl "$dirurl")"
+            url="https://download.mozilla.org/?product=firefox-latest&os=linux&lang=en-US"
             ;;
         "release-64")
-            dirurl="ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/latest/linux-x86_64/en-US/"
-            url="${dirurl}$(curl -sl "$dirurl")"
+            url="https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=en-US"
             ;;
         "beta-32")
-            dirurl="ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/latest-beta/linux-i686/en-US/"
-            url="${dirurl}$(curl -sl "$dirurl")"
+            url="https://download.mozilla.org/?product=firefox-beta-latest&os=linux&lang=en-US"
+            ;;
+        "beta-64")
+            url="https://download.mozilla.org/?product=firefox-beta-latest&os=linux64&lang=en-US"
             ;;
         "aurora-32")
             url="https://download.mozilla.org/?product=firefox-aurora-latest-ssl&os=linux64&lang=en-US"
