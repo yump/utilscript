@@ -99,6 +99,7 @@ lazyexec_ff_channel () {
     channel="$1"
     shift
     install_ff_channel "$channel"
+    export MOZ_USE_XINPUT2=1
     cd "${foxdir}/${channel}" && exec ./firefox "$@"
 }
 
