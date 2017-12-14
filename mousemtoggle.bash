@@ -23,22 +23,22 @@ device_ids () {
 
 on () {
     device_ids | while read device_id; do
-        xinput set-prop $device_id 299 1
+        xinput set-prop $device_id 302 1
     done
 }
 
 off () {
     device_ids | while read device_id; do
-        xinput set-prop $device_id 299 0
+        xinput set-prop $device_id 302 0
     done
 }
 
 toggle () {
     device_ids | while read device_id; do
-        if xinput list-props $device_id | grep 299 | grep '0$' &>/dev/null; then
-            xinput set-prop $device_id 299 1
+        if xinput list-props $device_id | grep 302 | grep '0$' &>/dev/null; then
+            xinput set-prop $device_id 302 1
         else
-            xinput set-prop $device_id 299 0
+            xinput set-prop $device_id 302 0
         fi
     done
 }
