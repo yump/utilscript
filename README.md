@@ -20,6 +20,10 @@ Versatile password generator.  Uses /dev/random and is reasonably
 miserly with the entropy, so it doesn't take too long. Supports
 xkcd-style passwords, plus the regular kind.
 
+### powermon.py
+
+Show the estimated power consumption of your (Intel) CPU.
+
 ### trim-common-prefixes.py
 
 Remove common prefixes from the beginnings of lines.  Good for piping to
