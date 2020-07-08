@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+emu_prop="libinput Middle Emulation Enabled"
+
 device_ids () {
     xinput --list \
         | grep 'slave *pointer' \
@@ -23,22 +25,22 @@ device_ids () {
 
 on () {
     device_ids | while read device_id; do
-        xinput set-prop $device_id 302 1
+        xinput set-prop $device_id "$emu_prop" 1
     done
 }
 
 off () {
     device_ids | while read device_id; do
-        xinput set-prop $device_id 302 0
+        xinput set-prop $device_id "$emu_prop" 0
     done
 }
 
 toggle () {
     device_ids | while read device_id; do
-        if xinput list-props $device_id | grep 302 | grep '0$' &>/dev/null; then
-            xinput set-prop $device_id 302 1
+        if xinput list-props $device_id | grep "$emu_prop (" | grep -q '0$'; then
+            xinput set-prop $device_id "$emu_prop" 1
         else
-            xinput set-prop $device_id 302 0
+            xinput set-prop $device_id "$emu_prop" 0
         fi
     done
 }
