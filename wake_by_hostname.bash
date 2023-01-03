@@ -51,6 +51,15 @@ wake_host () {
     fi
 }
 
+wait_for_host () {
+    local tstart=$EPOCHSECONDS
+    while (( EPOCHSECONDS < tstart + 30 )); do
+        ping -c1 -w30 "$1" &>/dev/null && return
+    done
+    echo "Could not wake $1" 1>&2
+    return 1
+}
+
 print_usage () {
     printf "%s\n" \
         "Usage:" \
@@ -77,9 +86,16 @@ main () {
                     ;;
                 *)
                     wake_host "$arg"
+                    wait_for_host "$arg" &
                     ;;
             esac
         done
+        # wait for all hosts to wake up or time out
+        local failed=0
+        while [[ -n "$(jobs)" ]]; do
+            wait -fn || (( failed += 1 ))
+        done
+        return $(( failed > 0 ))
     fi
 }
 
