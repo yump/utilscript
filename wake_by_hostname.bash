@@ -70,7 +70,14 @@ print_usage () {
         "   -u   update database of mac addresses from current ARP table"
 }
 
+cleanup_children() {
+    if [[ -n $(jobs) ]]; then
+        env kill --timeout 1000 KILL --signal TERM $(jobs -p)
+    fi
+}
+
 main () {
+    trap cleanup_children EXIT
     if [[ $# == 0 ]]; then
         print_usage
     else
