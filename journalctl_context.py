@@ -58,8 +58,9 @@ def journalctl_with_context(
     msg_buf = deque()
     for logmsg in LogMessage.journal_reader(extra_args):
         match = re.search(search_pattern, logmsg.msg)
-        # buffer messages that aren't too old
+        # sliding window of messages
         msg_buf.append(logmsg)
+        # remove everything more than x seconds before the latest
         while (logmsg.ts - msg_buf[0].ts).total_seconds() > seconds_before:
             msg_buf.popleft()
         # state machine
@@ -67,13 +68,13 @@ def journalctl_with_context(
             if match:
                 printing = True
                 last_seen = logmsg.ts
-                print("\n".join(str(m) for m in msg_buf))  # incl current line
+                # print the before context and the matching message
+                print("\n".join(str(m) for m in msg_buf))
                 msg_buf.clear()
         else:
             if match:
                 last_seen = logmsg.ts
             if (logmsg.ts - last_seen).total_seconds() <= seconds_after:
-                pass
                 print(logmsg)
             else:
                 print("--")  # to separate matches, same as grep -C
