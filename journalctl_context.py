@@ -7,6 +7,7 @@ from typing import List, Optional
 import json
 import argparse
 import sys
+import os
 import subprocess
 import re
 
@@ -52,12 +53,17 @@ def journalctl_with_context(
     seconds_before: float,
     seconds_after: float,
     extra_args: List[str],
+    hilight_match: bool = False,
 ):
     printing: bool = False
     last_seen: Optional[datetime] = None
     msg_buf = deque()
     for logmsg in LogMessage.journal_reader(extra_args):
         match = re.search(search_pattern, logmsg.msg)
+        if hilight_match and match:
+            logmsg.msg = re.sub(
+                f"({search_pattern})", "\x1b[1m\x1b[31m\\1\x1b[0m", logmsg.msg
+            )
         # sliding window of messages
         msg_buf.append(logmsg)
         # remove everything more than x seconds before the latest
@@ -88,6 +94,9 @@ if __name__ == "__main__":
     ap.add_argument("-B", "--before", metavar="SECONDS", type=float, default=0)
     ap.add_argument("-A", "--after", metavar="SECONDS", type=float, default=0)
     ap.add_argument("-C", "--context", metavar="SECONDS", type=float, default=0)
+    ap.add_argument(
+        "--color", choices=["never", "always", "auto"], default="auto"
+    )
     ap.add_argument("pattern", help="python regex search pattern")
     args, extra_args = ap.parse_known_args()
     # precedence logic
@@ -96,9 +105,15 @@ if __name__ == "__main__":
     if args.context != 0:
         before = args.context
         after = args.context
+    # figure out the color
+    match args.color:
+        case "never":
+            color = False
+        case "always":
+            color = True
+        case "auto":
+            color = False if "NO_COLOR" in os.environ else sys.stdout.isatty()
+    # do it
     journalctl_with_context(
-        args.pattern,
-        before,
-        after,
-        extra_args,
+        args.pattern, before, after, extra_args, hilight_match=color
     )
