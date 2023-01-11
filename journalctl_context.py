@@ -2,86 +2,81 @@
 
 from collections import deque
 from datetime import datetime
-from typing import List, NamedTuple, Optional
-from systemd import journal
+from dataclasses import dataclass
+from typing import List, Optional
 import json
-import dateparser
 import argparse
 import sys
 import subprocess
 import re
 
 
-def format_entry(entry):
-    try:
-        # time = entry["__REALTIME_TIMESTAMP"].isoformat(timespec="milliseconds")
-        host = entry.get("_HOSTNAME", "(no hostname)")
-        sender = (
-            entry.get("SYSLOG_IDENTIFIER", entry.get("_COMM", "(no id)"))
-            + "["
-            + str(entry.get("_PID", "no PID"))
-            + "]"
-        )
-        message = str(entry.get("MESSAGE", "(no message)"))  # some are bytes
-        meta = f"{host} {sender}: "
-        pad = "\n" + " " * len(meta)
-        return meta + pad.join(message.strip().splitlines())
-    except:
-        print("Bad entry:", file=sys.stderr)
-        print(entry, file=sys.stderr)
-        raise
-
-
-def entries_in_range(since: datetime, until: datetime):
-    j = journal.Reader()
-    j.seek_realtime(since)
-    for e in j:
-        if e["__REALTIME_TIMESTAMP"] > until:
-            break
-        else:
-            yield e
-
-
-class LogMessage(NamedTuple):
+@dataclass(slots=True)
+class LogMessage:
     ts: datetime
     msg: str
 
     def __str__(self):
         return self.ts.isoformat(timespec="milliseconds") + " " + self.msg
 
+    @classmethod
+    def journal_reader(cls, journalctl_args: List[str] = []):
+        # delegate to journalctl CLI, because it's better than python systemd
+        # library at handling corrupt journal files gracefully
+        child = subprocess.Popen(
+            ["journalctl"]
+            + journalctl_args
+            + ["-q", "-o", "short-iso-precise"],
+            text=True,
+            stdout=subprocess.PIPE,
+        )
+        # ugly hax for handling multi-line log messages
+        def produce(linebuf: List[str]):
+            timestamp, firstline = linebuf[0][:-1].split(maxsplit=1)
+            message = firstline + "".join(linebuf[1:])[:-1]
+            linebuf.clear()
+            return cls(datetime.fromisoformat(timestamp), message)
+
+        # put the 1st line in the buffer and loop starting at the 2nd
+        linebuf: List[str] = [next(iter(child.stdout))]
+        for line in child.stdout:
+            if line[0] != " ":  # not a continuation of the last message
+                yield produce(linebuf)
+            linebuf.append(line)
+        yield produce(linebuf)
+        child.wait()
+
 
 def journalctl_with_context(
     search_pattern: str,
     seconds_before: float,
     seconds_after: float,
-    since: datetime,
-    until: datetime,
+    extra_args: List[str],
 ):
     printing: bool = False
     last_seen: Optional[datetime] = None
     msg_buf = deque()
-    for entry in entries_in_range(since, until):
-        parsed = LogMessage(entry["__REALTIME_TIMESTAMP"], format_entry(entry))
-        match = re.search(search_pattern, parsed.msg)
+    for logmsg in LogMessage.journal_reader(extra_args):
+        match = re.search(search_pattern, logmsg.msg)
         # buffer messages that aren't too old
-        msg_buf.append(parsed)
-        while (parsed.ts - msg_buf[0].ts).total_seconds() > seconds_before:
+        msg_buf.append(logmsg)
+        while (logmsg.ts - msg_buf[0].ts).total_seconds() > seconds_before:
             msg_buf.popleft()
         # state machine
         if not printing:
             if match:
                 printing = True
-                last_seen = parsed.ts
+                last_seen = logmsg.ts
                 print("\n".join(str(m) for m in msg_buf))  # incl current line
                 msg_buf.clear()
         else:
             if match:
-                last_seen = parsed.ts
-            if (parsed.ts - last_seen).total_seconds() <= seconds_after:
+                last_seen = logmsg.ts
+            if (logmsg.ts - last_seen).total_seconds() <= seconds_after:
                 pass
-                print(parsed)
+                print(logmsg)
             else:
-                print("--")  # separate incidents
+                print("--")  # to separate matches, same as grep -C
                 printing = False
 
 
@@ -92,31 +87,17 @@ if __name__ == "__main__":
     ap.add_argument("-B", "--before", metavar="SECONDS", type=float, default=0)
     ap.add_argument("-A", "--after", metavar="SECONDS", type=float, default=0)
     ap.add_argument("-C", "--context", metavar="SECONDS", type=float, default=0)
-    ap.add_argument("-S", "--since", default=None)
-    ap.add_argument("-U", "--until", default="now")
     ap.add_argument("pattern", help="python regex search pattern")
-    args = ap.parse_intermixed_args()
+    args, extra_args = ap.parse_known_args()
     # precedence logic
     before = args.before
     after = args.after
     if args.context != 0:
         before = args.context
         after = args.context
-    # parse since/until
-    if args.since:
-        since = dateparser.parse(
-            args.since, settings={"RETURN_AS_TIMEZONE_AWARE": True}
-        )
-    else:
-        since = datetime.utcfromtimestamp(0)
-    until = dateparser.parse(
-        args.until, settings={"RETURN_AS_TIMEZONE_AWARE": True}
-    )
-    # do it
     journalctl_with_context(
         args.pattern,
         before,
         after,
-        since=since,
-        until=until,
+        extra_args,
     )
